@@ -1,0 +1,190 @@
+#include <iostream>
+#include <vector>
+#include <algorithm> 
+#include <numeric>   
+#include <limits>    
+
+struct Funcionario {
+    int prontuario;
+    std::string nome;
+    double salario;
+};
+
+class ListaFuncionarios {
+private:
+    std::vector<Funcionario> lista;
+
+    auto encontrarPorProntuario(int prontuario) {
+        return std::find_if(
+            lista.begin(),
+            lista.end(),
+            [prontuario](const Funcionario& func) {
+                return func.prontuario == prontuario;
+            }
+        );
+    }
+
+public:
+    bool adicionar(const Funcionario& func) {
+        auto it = encontrarPorProntuario(func.prontuario);
+        if (it == lista.end()) {
+            lista.push_back(func);
+            return true;
+        }
+        return false;
+    }
+
+    bool excluir(int prontuario) {
+        auto it = encontrarPorProntuario(prontuario);
+        if (it != lista.end()) { // Se encontrar, excluir
+            lista.erase(it);
+            return true;
+        }
+        return false;
+    }
+
+    Funcionario* pesquisar(int prontuario) {
+        auto it = encontrarPorProntuario(prontuario);
+        if (it != lista.end()) {
+            return &(*it);
+        }
+        return nullptr;
+    }
+
+
+    void listar() {
+        double totalSalarios = 0.0;
+        for (const auto& func : lista) {
+            std::cout << "Prontuário: " << func.prontuario
+                      << ", Nome: " << func.nome
+                      << ", Salário: " << func.salario << '\n';
+            totalSalarios += func.salario;
+        }
+        std::cout << "Total dos salários: " << totalSalarios << '\n';
+    }
+};
+
+void exibirMenu() {
+    std::cout << "\nMenu:\n";
+    std::cout << "0. Sair\n";
+    std::cout << "1. Incluir\n";
+    std::cout << "2. Excluir\n";
+    std::cout << "3. Pesquisar\n";
+    std::cout << "4. Listar\n";
+}
+
+int main() {
+    ListaFuncionarios lista;
+    int opcao = -1;
+
+    while (opcao != 0) {
+        exibirMenu();
+        std::cout << "Escolha uma opção: ";
+        std::cin >> opcao;
+
+        if (std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Erro: Entrada inválida. Tente novamente.\n";
+            continue;
+        }
+
+        switch (opcao) {
+            case 0: {
+                std::cout << "Saindo do programa.\n";
+                break;
+            }
+
+            case 1: {
+                Funcionario novoFunc;
+
+                std::cout << "Prontuário: ";
+                std::cin >> novoFunc.prontuario;
+
+                if (std::cin.fail()) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Erro: Prontuário deve ser um número inteiro.\n";
+                    break;
+                }
+
+                std::cin.ignore();
+                std::cout << "Nome: ";
+                std::getline(std::cin, novoFunc.nome);
+
+                std::cout << "Salário: ";
+                std::cin >> novoFunc.salario;
+
+                if (std::cin.fail()) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Erro: Salário deve ser um número.\n";
+                    break;
+                }
+
+                if (lista.adicionar(novoFunc)) {
+                    std::cout << "Funcionário adicionado com sucesso.\n";
+                } else {
+                    std::cout << "Erro: Prontuário já existe.\n";
+                }
+                break;
+            }
+
+            case 2: { 
+                int prontuario;
+                std::cout << "Prontuário para excluir: ";
+                std::cin >> prontuario;
+
+                if (std::cin.fail()) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Erro: Prontuário deve ser um número inteiro.\n";
+                    break; 
+                }
+
+                if (lista.excluir(prontuario)) {
+                    std::cout << "Funcionário excluído com sucesso.\n";
+                } else {
+                    std::cout << "Erro: Funcionário não encontrado.\n";
+                }
+                break; 
+            }
+
+            case 3: { 
+                int prontuario;
+                std::cout << "Prontuário para pesquisar: ";
+                std::cin >> prontuario;
+
+                if (std::cin.fail()) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Erro: Prontuário deve ser um número inteiro.\n";
+                    break;
+                }
+
+                Funcionario* func = lista.pesquisar(prontuario);
+
+                if (func != nullptr) {
+                    std::cout << "Prontuário: " << func->prontuario
+                              << ", Nome: " << func->nome
+                              << ", Salário: " << func->salario << '\n';
+                } else {
+                    std::cout << "Erro: Funcionário não encontrado.\n";
+                }
+                break;
+            }
+
+            case 4: { 
+                lista.listar();
+                break;
+            }
+
+            default: {
+                std::cout << "Opção inválida. Tente novamente.\n";
+                break;
+            }
+        }
+    }
+
+    return 0;
+}
